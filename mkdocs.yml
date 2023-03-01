@@ -23,6 +23,7 @@ nav:
   - Add a Dialog: 'aad/Dialog.md'
   - Add a Meeting app: 'aad/MeetingConfigurableTab.md'
   - Add a Message Extension: 'aad/MessagingExtension.md'
+  - Create a Tab App using Teams Toolkit: 'aad/teams-toolkit.md'
   - Selling Your SaaS-based Teams Extension: 'aad/Monetization.md'
 - Resources: 
   - More Information: 'Resources.md'
