@@ -11,9 +11,9 @@ This is the extended lab where you will see how to make use of Teams Toolkit
 In this lab, once you finish setting up the Northwind Orders application, which can be found in the [A01-begin-app](https://github.com/microsoft/app-camp/blob/main/src/create-core-app/aad/A01-begin-app) folder, you will extend it further using Teams Toolkit.
 Here, you will explore Teams Toolkit and create a Teams App using the Northwind Orders application as a Server component
 
-* A01-begin-app: Setting up the application with Azure AD (📍You are here)
+* [A01-begin-app: Setting up the application with Azure AD](./A01-begin-app.md)
 * [A02-after-teams-sso: Creating a Teams app with Azure ADO SSO](./A02-after-teams-sso.md)
-* [A03-after-apply-styling: Teams styling and themes](./A03-after-apply-styling.md)
+* Working with Teams Toolkit (📍You are here)
 
 In this lab you will learn to:
 
@@ -26,31 +26,24 @@ In this lab you will learn to:
 ??? note "Table of Contents (open to display ►)"
     - [Overview](#overview)
     - [Features](#features)
-    - [Exercise 1: Install prerequisites](#exercise-1-install-prerequisites)
-      - [Step 1: Install NodeJS](#step-1-install-nodejs)
-      - [Step 2: Install a Code Editor](#step-2-install-a-code-editor)
-      - [Step 3: Install ngrok](#step-3-install-ngrok)
-    - [Exercise 2: Set up your Microsoft 365 Subscription](#exercise-2-set-up-your-microsoft-365-subscription)
-      - [Step 1: Get a tenant](#step-1-get-a-tenant)
-      - [Step 2: Enable Teams application uploads](#step-2-enable-teams-application-uploads)
-    - [Exercise 3: Assign users as Northwind "Employees"](#exercise-3-assign-users-as-northwind-employees)
-      - [Step 1: Edit Azure AD users](#step-1-edit-azure-ad-users)
-      - [Step 2: Ensure the users have managers](#step-2-ensure-the-users-have-managers)
-      - [Step 3: Ensure the users are licensed for Microsoft 365](#step-3-ensure-the-users-are-licensed-for-microsoft-365)
-    - [Exercise 4: Register your application with Azure AD](#exercise-4-register-your-application-with-azure-ad)
-      - [Step 1: Start ngrok](#step-1-start-ngrok)
-      - [Step 2: Register your application in Azure Active Directory](#step-2-register-your-application-in-azure-active-directory)
-      - [Step 3: Grant your application permission to call the Microsoft Graph API](#step-3-grant-your-application-permission-to-call-the-microsoft-graph-api)
-      - [Step 4: Consent to the permission](#step-4-consent-to-the-permission)
-      - [Step 5: Expose an API](#step-5-expose-an-api)
-    - [Exercise 5: Configure and run the application](#exercise-5-configure-and-run-the-application)
-      - [Step 1: Download the starting application](#step-1-download-the-starting-application)
-      - [Step 2: Install the app's dependencies](#step-2-install-the-apps-dependencies)
-      - [Step 3: Download the sample data](#step-3-configure-the-app-settings)
-      - [Step 4: Configure the app settings](#step-4-configure-the-app-settings)
-      - [Step 5: Run the application](#step-5-run-the-application)
-    - [Known issues](#known-issues)
-    - [Next steps](#next-steps)
+    - [Exercise 1: Create new Tab App using Teams Toolkit](#exercise-1-create-new-tab-app-using-teams-toolkit)
+      - [Step 1: Install Teams Toolkit Extension on VS Code](#step-1-install-teams-toolkit-extension-on-vs-code)
+      - [Step 2: Create a new app using teams Toolkit](#step-2-create-a-new-app-using-teams-toolkit)
+      - [Step 3: Connect Teams Toolkit with an existing Microsoft 365 Developer Account](#step-3-connect-teams-toolkit-with-an-existing-microsoft-365-developer-account)
+      - [Step 4: Debug and see how the app runs](#step-4-debug-and-see-how-the-app-runs)
+    - [Exercise 2: Modify App for Northwind Orders Application](#exercise-2-modify-app-for-northwind-orders-application)
+      - [Step 1: Modify App.tsx](#step-1-modify-apptsx)
+      - [Step 2: Add Dashboard.tsx](#step-2-add-dashboardtsx)
+      - [Step 3: Add Dashboard.css](#step-3-add-dashboardcss)
+      - [Step 4: Initializa Models](#step-4-initializa-models)
+      - [Step 5: Create OrderGrids](#step-5-create-ordergrids)
+      - [Step 6: Create Counters](#step-6-create-counters)
+      - [Step 7: Connect Dashboard to tab](#step-7-connect-dashboard-to-tab)
+      - [Step 8: Create API Endpoints](#step-8-create-api-endpoints)
+    - [Exercise 3: Modify Northwind Orders Application](#exercise-3-modify-northwind-orders-application)
+      - [Step 1: Enable CORS in the Application](#step-1-enable-cors-in-the-application)
+      - [Step 2: Log AccessToken to Console](#step-2-log-accesstoken-to-console)
+
 
 ## Features
 
@@ -661,4 +654,62 @@ export function Counter(props: {
 - Add the import in the top `import { Dashboard } from "./pages/Dashboard";`
 - Replace `<Welcome showFunction={showFunction} />` with `<Dashboard />`
 
+### Step 8: Create API Endpoints
+
+- Create a new directory **lib** under src
+- Add a new file **apiEndpoints.tsx** with the following code
+```
+export class ApiEndpoints {
+    static readonly GET_EMPLOYEE = "/api/employee";
+    static readonly GET_ORDER = "/api/order";
+    static readonly VALIDATE_LOGIN = "/api/validateAadLogin";
+}
+```
+## Exercise 3: Modify Northwind Orders Application
+
+To use this App as a Server Application for Teams Tab App, we will need to enable CORS and log the access token.
+Once the modification is done, we will be able to use it directly with the Teams App.
+_This is done only to ensure continuity._
+
+
+### Step 1: Enable CORS in the Application
+Since the Northwind Orders application, runs on it's own, it doesn't need to enable CORS.
+However, in the Teams Application, you will make the API calls using **fetch** which requres the CORS Access policy to be implemented.
+
+- Open the Northwind Orders application in a separate VS Code
+- Open the server.js in server directoy
+- Add the following code snippet after `const app = express();`
+```
+var allowedOrigins = ['https://localhost:53000', 'https://teamsappcamp.loophole.site', 'https://2084-101-0-63-152.in.ngrok.io']; // Include your Teams App URL
+app.use(cors({
+  origin: function (origin, callback) {
+    // allow requests with no origin 
+    // (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      var msg = 'The CORS policy for this site does not ' +
+        'allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+}));
+```
+
+### Step 2: Log AccessToken to Console
+
+- Open the file **identityClient.js** under the path `/client/identity`
+- Locate the method `getLoggedinEmployeeId2()`
+- Add this `console.log('Token Used: ', accessToken);` below `console.log(`Signed into account with employee ID ${data.employeeId}`);`
+- Your **if** block should look like this
+```
+if (response.ok) {
+    const data = await response.json();
+    if (data.employeeId) {
+        console.log(`Signed into account with employee ID ${data.employeeId}`);
+        console.log('Token Used: ', accessToken);
+        return data.employeeId;
+    }
+}
+```
 
